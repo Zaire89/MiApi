@@ -47,9 +47,10 @@ namespace MyFirstAPI.Repository
             return nuevos;
         }
 
-        public static List<Usuario> InicioSesion(string Nickname, string Pass)
+        public static bool InicioSesion(string Nickname, string Pass)
         {
-            List<Usuario> userInicio = new List<Usuario>();
+            //Usuario userInicio = new Usuario();
+            bool retorno = false;
 
             using (SqlConnection sqlConect = new SqlConnection(ConectStr))
             {
@@ -65,15 +66,9 @@ namespace MyFirstAPI.Repository
                     {
                         if (dtRead.HasRows)
                         {
-                            while (dtRead.Read())
-                            {
-                                Usuario user = new Usuario();
-                                user.Nickname = dtRead["NombreUsuario"].ToString();
-                                user.Pass = dtRead["Contraseña"].ToString();
-
-                                userInicio.Add(user);
-                            }
+                            retorno = true;
                         }
+                        
                     }
 
                     sqlConect.Close();
@@ -81,45 +76,78 @@ namespace MyFirstAPI.Repository
                 }
             }
 
-            return userInicio;
+            return retorno;
         }
 
-        //public static bool NewUser(Usuario user)
-        //{
-        //    bool res = false;
-        //    using (SqlConnection sqlConnection = new SqlConnection(ConectStr))
-        //    {
-        //        string insUser = "INSERT INTO SistemaGestion.dbo.Usuario " +
-        //            "(Nombre, Apellido, NombreUsuario, Contraseña, Mail) VALUES " +
-        //            "(@nameP, @lastnameP, @nicknameP, @passP, @emailP);";
 
-        //        SqlParameter nameP = new SqlParameter("nameP", SqlDbType.VarChar) { Value = user.Name };
-        //        SqlParameter lastnameP = new SqlParameter("lastnameP", SqlDbType.VarChar) { Value = user.Lastname };
-        //        SqlParameter nicknameP = new SqlParameter("nicknameP", SqlDbType.VarChar) { Value = user.Nickname };
-        //        SqlParameter passP = new SqlParameter("passP", SqlDbType.VarChar) { Value = user.Pass };
-        //        SqlParameter emailP  = new SqlParameter("emailP", SqlDbType.VarChar) { Value = user.Email };
+        public static bool ModUser(Usuario user)
+        {
+            bool retorno = false;
+            using (SqlConnection sqlConect = new SqlConnection(ConectStr))
+            {
+                string sqlComUp = "UPDATE SistemaGestion.dbo.Usuario SET Nombre = @nombre WHERE Id = @id ";
 
-        //        sqlConnection.Open();
+                SqlParameter nameP = new SqlParameter("nombre", SqlDbType.VarChar) { Value = user.Name };
+                SqlParameter idP = new SqlParameter("id", SqlDbType.BigInt) { Value = user.Id };
 
-        //        using (SqlCommand sqlComm = new SqlCommand(insUser, sqlConnection))
-        //        {
-        //            sqlComm.Parameters.Add(nameP);
-        //            sqlComm.Parameters.Add(lastnameP);
-        //            sqlComm.Parameters.Add(nicknameP);
-        //            sqlComm.Parameters.Add(passP);
-        //            sqlComm.Parameters.Add(emailP);
+                sqlConect.Open();
 
-        //            int r = sqlComm.ExecuteNonQuery(); 
+                using (SqlCommand sqlComm = new SqlCommand(sqlComUp, sqlConect))
+                {
+                    sqlComm.Parameters.Add(nameP);
+                    sqlComm.Parameters.Add(idP);
 
-        //            if (r > 0)
-        //                res = true;
+                    int rows = sqlComm.ExecuteNonQuery(); 
 
-        //        }
+                    if (rows > 0)
+                    {
+                        retorno = true;
+                    }
+                }
 
-        //        sqlConnection.Close();
-        //    }
+                sqlConect.Close();
+            }
 
-        //    return res;
-        //}
+            return retorno;
+        }
+
+
+        public static bool NewUser(Usuario user)
+        {
+            bool res = false;
+            using (SqlConnection sqlConnection = new SqlConnection(ConectStr))
+            {
+                string insUser = "INSERT INTO SistemaGestion.dbo.Usuario " +
+                    "(Nombre, Apellido, NombreUsuario, Contraseña, Mail) VALUES " +
+                    "(@nameP, @lastnameP, @nicknameP, @passP, @emailP);";
+
+                SqlParameter nameP = new SqlParameter("nameP", SqlDbType.VarChar) { Value = user.Name };
+                SqlParameter lastnameP = new SqlParameter("lastnameP", SqlDbType.VarChar) { Value = user.Lastname };
+                SqlParameter nicknameP = new SqlParameter("nicknameP", SqlDbType.VarChar) { Value = user.Nickname };
+                SqlParameter passP = new SqlParameter("passP", SqlDbType.VarChar) { Value = user.Pass };
+                SqlParameter emailP = new SqlParameter("emailP", SqlDbType.VarChar) { Value = user.Email };
+
+                sqlConnection.Open();
+
+                using (SqlCommand sqlComm = new SqlCommand(insUser, sqlConnection))
+                {
+                    sqlComm.Parameters.Add(nameP);
+                    sqlComm.Parameters.Add(lastnameP);
+                    sqlComm.Parameters.Add(nicknameP);
+                    sqlComm.Parameters.Add(passP);
+                    sqlComm.Parameters.Add(emailP);
+
+                    int r = sqlComm.ExecuteNonQuery();
+
+                    if (r > 0)
+                        res = true;
+
+                }
+
+                sqlConnection.Close();
+            }
+
+            return res;
+        }
     }
 }
